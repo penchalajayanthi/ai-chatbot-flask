@@ -1,6 +1,6 @@
 # AI Chatbot Flask
 
-An AI-powered chatbot web application built using Flask, SQLite, HTML, CSS, and Groq API.
+An AI-powered chatbot web application built using Flask, SQLite, Groq API, HTML, CSS, and JavaScript. Features include user authentication, OTP-based password reset, conversation management, and real-time AI responses with a responsive UI.
 
 ## Features
 
