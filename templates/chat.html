@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>🤖AI Chatbot</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial;
+            display: flex;
+            height: 100vh;
+        }
+
+        #sidebar {
+            width: 250px;
+            background: #202123;
+            color: white;
+            /* padding: 10px; */
+            overflow-y: auto;
+        }
+
+        #sidebar h2 {
+            text-align: center;
+        }
+
+        .chat-item {
+            padding: 10px;
+            border-bottom: 1px solid gray;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            align-items: center;
+            /* height: 15px; */
+        }
+
+        .chat-item:hover {
+            /* background: #343541; */
+            background: green;
+        }
+
+        #main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #343541;
+            color: white;
+        }
+
+        #chatbox {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        #input-area {
+            display: flex;
+            /* padding: 10px; */
+            background: #202123;
+        }
+
+        input {
+            flex: 1;
+            padding: 10px;
+        }
+
+        .new-chat {
+            border-bottom: 1px solid gray;
+            font-weight: bold;
+        }
+
+
+        .new-chat:hover {
+            background: #343541;
+        }
+
+
+        #input-area button {
+            padding: 10px;
+            background-color: darkorchid;
+            color: white;
+        }
+
+        .user {
+            color: lightgreen;
+        }
+
+        .bot {
+            color: lightblue;
+        }
+
+        .title {
+            text-align: center;
+            font-size: 28px;
+        }
+
+        .typing::after {
+            content: '...';
+            animation: dots 1s steps(3, end) infinite;
+        }
+
+        .delete-btn {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 15px;
+            color: #bbb;
+            transition: 0.2s;
+        }
+
+        .delete-btn:hover {
+            color: red;
+            transform: scale(1.2);
+        }
+
+        #sidebar {
+            width: 250px;
+            background: #202123;
+            color: white;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logout-container {
+            padding-top: 10px;
+            border-top: 1px solid gray;
+            margin-top: auto;
+        }
+
+        .logout-btn {
+            width: 100%;
+            padding: 10px;
+            background-color: crimson;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            /* margin-top: 45vh; */
+        }
+
+        .logout-btn:hover {
+            background-color: darkred;
+        }
+
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* MODAL BOX */
+        .modal-box {
+            background: #2c2f33;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            width: 300px;
+            color: white;
+            animation: fadeIn 0.2s ease-in-out;
+        }
+
+        /* BUTTONS */
+        .modal-actions {
+            margin-top: 15px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .cancel-btn {
+            padding: 8px 15px;
+            border: none;
+            background: gray;
+            color: white;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .confirm-btn {
+            padding: 8px 15px;
+            border: none;
+            background: crimson;
+            color: white;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .confirm-btn:hover {
+            background: darkred;
+        }
+
+        .cancel-btn:hover {
+            background: #555;
+        }
+
+
+        .profile-section {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            border-bottom: 1px solid gray;
+            margin-bottom: 10px;
+        }
+
+        .profile-icon {
+            background: white;
+            border-radius: 50%;
+            padding: 8px;
+        }
+
+        .profile-name {
+            font-size: 16px;
+            font-weight: bold;
+            color: lightgreen;
+        }
+
+        .menu-container {
+            position: relative;
+        }
+
+        .menu-btn {
+            background: transparent;
+            border: none;
+            color: #bbb;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        .menu-dropdown {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 25px;
+            background: #2c2f33;
+            border-radius: 5px;
+            overflow: hidden;
+            z-index: 100;
+            min-width: 120px;
+        }
+
+        .menu-dropdown div {
+            padding: 8px 12px;
+            cursor: pointer;
+        }
+
+        .menu-dropdown div:hover {
+            background: #444;
+        }
+
+        /* ANIMATION */
+        @keyframes fadeIn {
+            from {
+                transform: scale(0.9);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        @keyframes dots {
+
+            0%,
+            20% {
+                content: '.';
+            }
+
+            40% {
+                content: '..';
+            }
+
+            60%,
+            100% {
+                content: '...';
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- DELETE CONFIRM MODAL -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-box">
+            <h3>⚠️ Delete Chat</h3>
+            <p>Are you sure you want to delete this chat?</p>
+
+            <div class="modal-actions">
+                <button class="cancel-btn" onclick="closeModal()">Cancel</button>
+                <button class="confirm-btn" onclick="confirmDelete()">Delete</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- RENAME MODAL -->
+    <div id="renameModal" class="modal">
+        <div class="modal-box">
+            <h3>✏️ Rename Chat</h3>
+
+            <input id="renameInput" type="text" placeholder="Enter new name"
+                style="width:100%; padding:8px; margin-top:10px;">
+
+            <div class="modal-actions">
+                <button class="cancel-btn" onclick="closeRenameModal()">Cancel</button>
+                <button class="confirm-btn" onclick="confirmRename()">Save</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- LOGOUT CONFIRM MODAL -->
+    <div id="logoutModal" class="modal">
+        <div class="modal-box">
+            <h3>Logout</h3>
+            <p>Are you sure you want to logout?</p>
+
+            <div class="modal-actions">
+                <button class="cancel-btn" onclick="closeLogoutModal()">Cancel</button>
+                <button class="confirm-btn" onclick="confirmLogout()">Logout</button>
+            </div>
+        </div>
+    </div>
+    <!-- Sidebar -->
+    <div id="sidebar">
+        <div class="profile-section">
+            <div class="profile-icon">👤</div>
+            <div class="profile-name">{{ user }}</div>
+        </div>
+        <!-- <h2>History</h2> -->
+
+        <div class="chat-item new-chat" onclick="newChat()">
+            <span>New Chat</span>
+            <span class="plus-icon">➕</span>
+        </div>
+        <div id="history"></div>
+        <div class="logout-container">
+            <button onclick="openLogoutModal()" class="logout-btn"> Logout</button>
+        </div>
+    </div>
+
+
+    <!-- Chat -->
+    <div id="main">
+        <h2 class="title">💬 Welcome to AI Chatbot</h2>
+
+        <div id="chatbox"></div>
+
+        <div id="input-area">
+            <input id="msg" placeholder="Type message..." onkeypress="handleEnter(event)">
+            <button onclick="send()">Send</button>
+        </div>
+    </div>
+
+    <script>
+        let currentConvo = null;
+
+        // ENTER KEY SUPPORT
+        function handleEnter(e) {
+            if (e.key === "Enter") send();
+        }
+
+        // NEW CHAT
+        function newChat() {
+            fetch("/new_chat")
+                .then(res => res.json())
+                .then(data => {
+                    currentConvo = data.convo_id;
+                    document.getElementById("chatbox").innerHTML = "";
+                    loadConversations();
+                });
+        }
+
+        // LOAD SIDEBAR
+        function loadConversations() {
+            fetch("/conversations")
+                .then(res => res.json())
+                .then(data => {
+                    console.log("Conversations:", data);
+                    let div = document.getElementById("history");
+                    div.innerHTML = "";
+
+                    data.convos.forEach(c => {
+                        let item = document.createElement("div");
+                        item.className = "chat-item";
+
+                        // ✅ Make entire row clickable
+                        item.onclick = () => loadChat(c[0]);
+
+                        item.innerHTML = `
+        <span>${c[1]}</span>
+         
+        <div class="menu-container" onclick="event.stopPropagation()">
+    <button class="menu-btn" onclick="toggleMenu(${c[0]})">⋮</button>
+
+    <div id="menu-${c[0]}" class="menu-dropdown">
+        <div onclick="openRenameModal(${c[0]})">✏️ Rename</div>
+       <div onclick="openModal(${c[0]})">🗑️ Delete</div>
+        <div onclick="starChat(${c[0]})">⭐ Star</div>
+    </div>
+</div>
+    `;
+
+                        div.appendChild(item);
+                    });
+                });
+        }
+
+        function toggleMenu(id) {
+            let menu = document.getElementById("menu-" + id);
+
+            // close all menus first
+            document.querySelectorAll(".menu-dropdown").forEach(m => {
+                if (m !== menu) m.style.display = "none";
+            });
+
+            // toggle current menu
+            menu.style.display = (menu.style.display === "block") ? "none" : "block";
+        }
+        document.addEventListener("click", function () {
+            document.querySelectorAll(".menu-dropdown").forEach(m => {
+                m.style.display = "none";
+            });
+        });
+        // LOAD CHAT
+        function loadChat(id) {
+            currentConvo = id;
+
+            fetch("/load_chat/" + id)
+                .then(res => res.json())
+                .then(data => {
+                    let box = document.getElementById("chatbox");
+                    box.innerHTML = "";
+
+                    data.chats.forEach(chat => {
+                        box.innerHTML += `
+                <p class='user'>You: ${chat[0]}</p>
+                <p class='bot'>Bot: ${chat[1]}</p>
+            `;
+                    });
+                });
+        }
+        function logout() {
+            window.location.href = "/";
+        }
+        // DELETE CHAT
+        function deleteChat(event, id) {
+            event.stopPropagation();
+
+            // ✅ Confirmation popup
+            let confirmDelete = confirm("⚠️ This chat will be permanently deleted. Continue?");
+
+            if (!confirmDelete) return;
+
+            fetch("/delete_chat/" + id)
+                .then(() => {
+                    loadConversations();
+
+                    // Optional: clear chatbox if current chat deleted
+                    document.getElementById("chatbox").innerHTML = "";
+                });
+        }
+
+
+        let deleteId = null;
+
+        // Open modal
+        function openModal(id) {
+            deleteId = id;
+            document.getElementById("deleteModal").style.display = "flex";
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById("deleteModal").style.display = "none";
+            deleteId = null;
+        }
+
+        // Confirm delete
+        function confirmDelete() {
+            if (!deleteId) return;
+
+            fetch("/delete_chat/" + deleteId)
+                .then(() => {
+                    loadConversations();
+
+                    // clear chat if deleted
+                    if (currentConvo == deleteId) {
+                        document.getElementById("chatbox").innerHTML = "";
+                        currentConvo = null;
+                    }
+
+                    closeModal();
+                });
+        }
+
+
+        // OPEN LOGOUT MODAL
+        function openLogoutModal() {
+            document.getElementById("logoutModal").style.display = "flex";
+        }
+
+        // CLOSE LOGOUT MODAL
+        function closeLogoutModal() {
+            document.getElementById("logoutModal").style.display = "none";
+        }
+
+        // CONFIRM LOGOUT
+        function confirmLogout() {
+            window.location.href = "/";
+        }
+
+        let renameId = null;
+
+        // OPEN MODAL
+        function openRenameModal(id) {
+            renameId = id;
+            document.getElementById("renameInput").value = "";
+            document.getElementById("renameModal").style.display = "flex";
+        }
+
+        // CLOSE MODAL
+        function closeRenameModal() {
+            document.getElementById("renameModal").style.display = "none";
+            renameId = null;
+        }
+
+        // CONFIRM RENAME
+        function confirmRename() {
+            let newName = document.getElementById("renameInput").value.trim();
+
+            if (!newName) return alert("Enter a name!");
+
+            fetch("/rename_chat/" + renameId, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ title: newName })
+            })
+                .then(() => {
+                    loadConversations();
+                    closeRenameModal();
+                });
+        }
+
+         function send() {
+    let msgInput = document.getElementById("msg");
+    let msg = msgInput.value.trim();
+
+    if (msg === "") return;
+
+    // ✅ ADD HERE
+    if (!currentConvo) {
+        console.log("No active chat, creating automatically...");
+    }
+
+    let chatbox = document.getElementById("chatbox");
+
+    chatbox.innerHTML += `<p class='user'>You: ${msg}</p>`;
+
+    let typingId = "typing-" + Date.now();
+    chatbox.innerHTML += `<p class='bot typing' id='${typingId}'>Bot is typing</p>`;
+
+    chatbox.scrollTop = chatbox.scrollHeight;
+
+    fetch("/chat", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ msg: msg })
+    })
+    .then(res => res.json())
+    .then(data => {
+        document.getElementById(typingId).innerHTML = `Bot: ${data.reply}`;
+
+        msgInput.value = "";
+        chatbox.scrollTop = chatbox.scrollHeight;
+
+        loadConversations(); // update sidebar
+    });
+}
+        // LOAD ON START
+        loadConversations();
+    </script>
+
+</body>
+
+</html>
